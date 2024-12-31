@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor AI Assistant - Login and Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 1rem;
+            color: #666;
+        }
+        input {
+            padding: 0.5rem;
+            margin-top: 0.25rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+            margin-top: 1rem;
+        }
+        .success {
+            color: green;
+            margin-top: 1rem;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Doctor AI Assistant</h1>
+        <form id="loginForm">
+            <label for="loginPhone">Phone:</label>
+            <input type="tel" id="loginPhone" required>
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" required>
+            <button type="submit">Login</button>
+        </form>
+        <form id="registerForm" class="hidden">
+            <label for="registerPhone">Phone:</label>
+            <input type="tel" id="registerPhone" required>
+            <label for="registerEmail">Email:</label>
+            <input type="email" id="registerEmail" required>
+            <label for="registerPassword">Password:</label>
+            <input type="password" id="registerPassword" required>
+            <button type="submit">Register</button>
+        </form>
+        <form id="verifyForm" class="hidden">
+            <label for="verifyEmail">Email:</label>
+            <input type="email" id="verifyEmail" required>
+            <label for="verifyOTP">OTP:</label>
+            <input type="text" id="verifyOTP" required>
+            <button type="submit">Verify Email</button>
+        </form>
+        <p id="message"></p>
+        <button id="toggleForm">Switch to Register</button>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const verifyForm = document.getElementById('verifyForm');
+        const toggleFormBtn = document.getElementById('toggleForm');
+        const message = document.getElementById('message');
+
+        toggleFormBtn.addEventListener('click', () => {
+            loginForm.classList.toggle('hidden');
+            registerForm.classList.toggle('hidden');
+            verifyForm.classList.add('hidden');
+            message.textContent = '';
+            toggleFormBtn.textContent = loginForm.classList.contains('hidden') ? 'Switch to Login' : 'Switch to Register';
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('loginPhone').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phone, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    message.textContent = data.message;
+                    message.className = 'success';
+                } else {
+                    message.textContent = data.error;
+                    message.className = 'error';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                message.textContent = 'An error occurred. Please try again.';
+                message.className = 'error';
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('registerPhone').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phone, email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    message.textContent = data.message;
+                    message.className = 'success';
+                    verifyForm.classList.remove('hidden');
+                    registerForm.classList.add('hidden');
+                } else {
+                    message.textContent = data.error;
+                    message.className = 'error';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                message.textContent = 'An error occurred. Please try again.';
+                message.className = 'error';
+            }
+        });
+
+        verifyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('verifyEmail').value;
+            const otp = document.getElementById('verifyOTP').value;
+
+            try {
+                const response = await fetch('/verify_email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, otp }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    message.textContent = data.message;
+                    message.className = 'success';
+                    verifyForm.classList.add('hidden');
+                    loginForm.classList.remove('hidden');
+                } else {
+                    message.textContent = data.error;
+                    message.className = 'error';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                message.textContent = 'An error occurred. Please try again.';
+                message.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>
+
